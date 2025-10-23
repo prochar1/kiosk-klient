@@ -131,6 +131,7 @@ dmypy.json
 # Project specific
 html/
 html_*/
+!dist/html/
 # Uncomment to exclude builds:
 # *.exe
 # *.msi

@@ -10,7 +10,7 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
+# dist/ - commented out to allow production builds
 downloads/
 eggs/
 .eggs/
@@ -130,5 +130,7 @@ dmypy.json
 
 # Project specific
 html/
-*.exe
-*.msi
+html_*/
+# Uncomment to exclude builds:
+# *.exe
+# *.msi

@@ -44,27 +44,22 @@ def serve(path):
 
 @app.route('/api/send-udp', methods=['POST'])
 def send_udp_signal():
-    """Pošle UDP signál při ukončení hry."""
+    """Pošle UDP signál s libovolnými daty."""
     try:
         data = request.get_json()
         
         # Vytvoření UDP socketu
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         
-        # Příprava zprávy
-        message = {
-            'action': 'game_exit',
-            'timestamp': data.get('timestamp'),
-            'score': data.get('score', 0),
-            'correctPlacements': data.get('correctPlacements', 0)
-        }
+        # Získej server a port
+        ip = data.get('server', '127.0.0.1')
+        port = data.get('port', 8001)
+        
+        # Odstraň server a port z dat pro zprávu
+        message = {k: v for k, v in data.items() if k not in ['server', 'port']}
         
         # Odeslání UDP zprávy
         udp_message = json.dumps(message).encode('utf-8')
-        
-        # Použij server a port z requestu
-        ip = data.get('server', '127.0.0.1')
-        port = data.get('port', 8001)
         
         sock.sendto(udp_message, (ip, port))
         sock.close()

@@ -8,13 +8,13 @@ Kiosk Klient je fullscreen aplikace určená pro kiosk systémy, která kombinuj
 - **Python Flask backend** pro API a servírování statických souborů
 - **HTML/CSS/JS frontend** pro uživatelské rozhraní
 - **PyWebView** pro vytvoření nativního okna aplikace
-- **UDP komunikaci** pro odesílání herních dat
+- **UDP komunikaci** pro odesílání libovolných dat
 - **Wget integrace** pro automatické aktualizace obsahu
 
 ## 🚀 Funkce
 
 - **Fullscreen kiosk rozhraní** bez rámečků a ovládacích prvků
-- **UDP API** pro odesílání herních statistik
+- **UDP API** pro odesílání libovolných dat
 - **Automatické aktualizace HTML** pomocí wget
 - **F5/Ctrl+F5 refresh** pro obnovení obsahu
 - **Automatický restart** po aktualizaci obsahu
@@ -88,16 +88,16 @@ Testovací endpoint pro ověření funkčnosti API.
 
 ### POST /api/send-udp
 
-Odesílá UDP zprávu s herními daty.
+Odesílá UDP zprávu s libovolnými daty.
 
 **Request Body:**
 ```json
 {
   "server": "127.0.0.1",
   "port": 8001,
-  "timestamp": "2024-01-01T12:00:00Z",
-  "score": 100,
-  "correctPlacements": 5
+  "action": "custom_event",
+  "data": "libovolná data",
+  "timestamp": "2024-01-01T12:00:00Z"
 }
 ```
 
@@ -112,12 +112,13 @@ Odesílá UDP zprávu s herními daty.
 **UDP zpráva:**
 ```json
 {
-  "action": "game_exit",
-  "timestamp": "2024-01-01T12:00:00Z",
-  "score": 100,
-  "correctPlacements": 5
+  "action": "custom_event",
+  "data": "libovolná data",
+  "timestamp": "2024-01-01T12:00:00Z"
 }
 ```
+
+**Poznámka:** Parametry `server` a `port` se použijí pro určení cíle UDP zprávy a nebudou součástí odeslané zprávy. Všechna ostatní data budou odeslána v UDP zprávě.
 
 ### POST /api/update-html
 

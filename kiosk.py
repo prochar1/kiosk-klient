@@ -106,15 +106,22 @@ def update_html():
             try:
                 print(f"Začínám wget download z {url}")
                 
-                # Zkus najít wget
+                # Zkus najít wget (včetně lokálního)
                 wget_cmd = None
-                for cmd_name in ['wget.exe', 'wget']:
-                    try:
-                        subprocess.run([cmd_name, '--version'], capture_output=True, check=True)
-                        wget_cmd = cmd_name
-                        break
-                    except (subprocess.CalledProcessError, FileNotFoundError):
-                        continue
+                
+                # Zkus lokální wget.exe vedle aplikace
+                local_wget = os.path.join(base_path, 'wget.exe')
+                if os.path.exists(local_wget):
+                    wget_cmd = local_wget
+                else:
+                    # Zkus systémový wget
+                    for cmd_name in ['wget.exe', 'wget']:
+                        try:
+                            subprocess.run([cmd_name, '--version'], capture_output=True, check=True)
+                            wget_cmd = cmd_name
+                            break
+                        except (subprocess.CalledProcessError, FileNotFoundError):
+                            continue
                 
                 if not wget_cmd:
                     raise Exception("wget není nainstalován nebo není v PATH")

@@ -44,6 +44,7 @@ pip install flask pywebview
 kiosk-klient/
 ├── kiosk.py          # Hlavní aplikace
 ├── kiosk.spec        # PyInstaller konfigurace
+├── wget.exe          # Wget pro Windows (volitelné)
 ├── html/             # HTML build soubory
 │   ├── index.html
 │   └── static/
@@ -140,6 +141,7 @@ Aktualizuje HTML obsah aplikace stažením z URL pomocí wget.
 ```
 
 **Chování:**
+- Hledá `wget.exe` vedle aplikace, pak systémový `wget`
 - Stahuje obsah pomocí `wget` do složky `html_update`
 - Po dokončení zálohuje stávající `html` složku s časovým razítkem
 - Přejmenuje `html_update` na `html`
@@ -185,7 +187,7 @@ Aplikace vypisuje informace o:
 - Chyby při UDP komunikaci jsou zachyceny a vráceny jako JSON
 - Aplikace podporuje servírování HTML Single Page Application
 - HTML aktualizace běží v samostatném vlákně
-- Vyžaduje `wget` nebo `wget.exe` v PATH pro funkci aktualizace
+- Vyžaduje `wget.exe` vedle aplikace nebo `wget` v PATH pro funkci aktualizace
 - Stará HTML data jsou automaticky zálohována s časovým razítkem
 - Aplikace se automaticky restartuje po úspěšné aktualizaci obsahu
 - F5/Ctrl+F5 klávesy fungují pro refresh bez závislosti na HTML obsahu

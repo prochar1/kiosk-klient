@@ -235,13 +235,17 @@ if __name__ == '__main__':
     window = webview.create_window(
         'Kiosk',
         url=url,
-        fullscreen=True,
+        fullscreen=False,
         width=1920,
         height=1080,
+        x=0,
+        y=0,
+        min_size=(1920, 1080),
         resizable=False,
-        frameless=False,
+        frameless=True,
         shadow=False,
-        on_top=False
+        on_top=True,
+        easy_drag=False
     )
     
     window.events.loaded += on_loaded

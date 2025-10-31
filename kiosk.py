@@ -223,6 +223,11 @@ class Config:
     TotalTime = 3600
     RemainingTime = 3600
 
+class AppFlags:
+    debug = False
+    frameless = True
+    on_top = True
+
 class Data:
     class GameModes:
         Individual = 'Individual'
@@ -250,6 +255,10 @@ def parse_arguments(args):
                 if args[i + 1].lower() == 'true':
                     Data.GameMode = Data.GameModes.Group
                 i += 1
+            elif arg == '-debug':
+                AppFlags.debug = True
+                AppFlags.frameless = False
+                AppFlags.on_top = False
         except Exception as e:
             print(f"Chyba při zpracování argumentu {arg}: {e}")
         i += 1
@@ -305,23 +314,23 @@ if __name__ == '__main__':
         """)
     
     window = webview.create_window(
-        'Kiosk',
-        url=url,
-        fullscreen=False,
-        width=1920,
-        height=1080,
-        x=0,
-        y=0,
-        min_size=(1920, 1080),
-        resizable=False,
-        frameless=False, #TODO True
-        shadow=False,
-        on_top=False, #TODO True
-        easy_drag=False
-    )
+            'Kiosk',
+            url=url,
+            fullscreen=False,
+            width=1920,
+            height=1080,
+            x=0,
+            y=0,
+            min_size=(1920, 1080),
+            resizable=False,
+            frameless=AppFlags.frameless,
+            shadow=False,
+            on_top=AppFlags.on_top,
+            easy_drag=False
+        )
     
     window.events.loaded += on_loaded
 
     # Spuštění GUI smyčky (blokuje, dokud se okno nezavře)
     print(f"Spouštím webview... ({time.time() - start_time:.2f}s)")
-    webview.start(debug=True, http_server=False)
+    webview.start(debug=AppFlags.debug, http_server=False)

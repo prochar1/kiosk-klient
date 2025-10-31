@@ -7,6 +7,28 @@ import sys
 import time
 from datetime import datetime
 import threading
+import logging
+
+# Nastavení logování
+def setup_logging():
+    if getattr(sys, 'frozen', False):
+        # V exe - log do souboru vedle exe
+        log_path = os.path.join(os.path.dirname(sys.executable), 'kiosk.log')
+    else:
+        # V dev - log do current dir
+        log_path = 'kiosk.log'
+    
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler(log_path, encoding='utf-8'),
+            logging.StreamHandler()  # Zároveň do konzole
+        ]
+    )
+    return logging.getLogger(__name__)
+
+logger = setup_logging()
 
 class Api:
     """JavaScript API pro přímé volání Python funkcí z webview."""
@@ -41,9 +63,10 @@ class Api:
             udp_message = json.dumps(message).encode('utf-8')
             sock.sendto(udp_message, (server, int(port)))
             sock.close()
-            print(f"UDP zpráva odeslána na {server}:{port}: {message}")
+            logger.info(f"UDP zpráva odeslána na {server}:{port}: {message}")
             return {'status': 'success', 'message': 'UDP signal sent'}
         except Exception as e:
+            logger.error(f"Chyba při odesílání UDP: {e}")
             return {'status': 'error', 'message': str(e)}
     
     def get_config(self):
@@ -119,12 +142,12 @@ class Api:
                     if getattr(sys, 'frozen', False):
                         # V PyInstaller buildu
                         temp_dir = sys._MEIPASS
-                        print(f"PyInstaller temp dir: {temp_dir}")
+                        logger.info(f"PyInstaller temp dir: {temp_dir}")
                         wget_embedded = os.path.join(temp_dir, 'wget.exe')
-                        print(f"Looking for wget at: {wget_embedded}")
+                        logger.info(f"Looking for wget at: {wget_embedded}")
                         if os.path.exists(wget_embedded):
                             wget_cmd = wget_embedded
-                            print(f"Using embedded wget: {wget_cmd}")
+                            logger.info(f"Using embedded wget: {wget_cmd}")
                     
                     # Lokální wget.exe vedle aplikace (fallback)
                     if not wget_cmd:

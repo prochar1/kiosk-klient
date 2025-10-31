@@ -24,13 +24,14 @@ def setup_logging():
     # maxBytes: 1MB max velikost, backupCount: uchovej 3 staré soubory
     file_handler = RotatingFileHandler(
         log_path, 
-        maxBytes=1024*1024,  # 1MB
-        backupCount=3,       # kiosk.log.1, kiosk.log.2, kiosk.log.3
+        maxBytes=512*1024,  # 512KB místo 1MB
+        backupCount=2,       # Pouze 2 staré soubory
         encoding='utf-8'
     )
     
     # Formátování
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', 
+                             datefmt='%H:%M:%S')  # Bez data, jen čas
     file_handler.setFormatter(formatter)
     
     # Console handler (jen pro debug)

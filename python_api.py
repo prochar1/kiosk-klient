@@ -114,10 +114,22 @@ class Api:
                     print(f"Začínám wget download z {url}")
                     
                     wget_cmd = None
-                    local_wget = os.path.join(base_path, 'wget.exe')
-                    if os.path.exists(local_wget):
-                        wget_cmd = local_wget
-                    else:
+                    
+                    # Pro PyInstaller - wget zabalený do exe
+                    if getattr(sys, 'frozen', False):
+                        # V PyInstaller buildu
+                        wget_embedded = os.path.join(sys._MEIPASS, 'wget.exe')
+                        if os.path.exists(wget_embedded):
+                            wget_cmd = wget_embedded
+                    
+                    # Lokální wget.exe vedle aplikace (fallback)
+                    if not wget_cmd:
+                        local_wget = os.path.join(base_path, 'wget.exe')
+                        if os.path.exists(local_wget):
+                            wget_cmd = local_wget
+                    
+                    # Systémový wget (fallback)
+                    if not wget_cmd:
                         for cmd_name in ['wget.exe', 'wget']:
                             try:
                                 subprocess.run([cmd_name, '--version'], capture_output=True, check=True)

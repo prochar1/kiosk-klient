@@ -190,15 +190,76 @@ def update_html():
 
 # --- Spuštění serveru a Webview ---
 
+def start_udp_receiver():
+    """Spustí UDP receiver, který předává zprávy do JavaScriptu."""
+    def udp_thread():
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.bind(('0.0.0.0', Config.ServerReceivePort))
+        print(f"UDP receiver naslouchá na portu {Config.ServerReceivePort}")
+        while True:
+            try:
+                data, addr = sock.recvfrom(4096)
+                msg = data.decode('utf-8')
+                print(f"Přijata UDP zpráva od {addr}: {msg}")
+                # Předání zprávy do JavaScriptu
+                if 'window' in globals() and window is not None:
+                    js_code = f"window.onUdpMessage && window.onUdpMessage({json.dumps(msg)});"
+                    window.evaluate_js(js_code)
+            except Exception as e:
+                print(f"Chyba v UDP receiveru: {e}")
+                time.sleep(1)
+    thread = threading.Thread(target=udp_thread, daemon=True)
+    thread.start()
+
 def start_server():
     """Spustí Flask server v samostatném vlákně."""
     from werkzeug.serving import make_server
     server = make_server('127.0.0.1', FLASK_PORT, app, threaded=True)
     server.serve_forever()
 
+class Config:
+    ServerReceivePort = 9001
+    ServerSendPort = 9002
+    TotalTime = 3600
+    RemainingTime = 3600
+
+class Data:
+    class GameModes:
+        Individual = 'Individual'
+        Group = 'Group'
+    GameMode = GameModes.Individual
+
+def parse_arguments(args):
+    i = 0
+    while i < len(args):
+        arg = args[i].lower()
+        try:
+            if arg == '-inport' and i + 1 < len(args):
+                Config.ServerReceivePort = int(args[i + 1])
+                i += 1
+            elif arg == '-outport' and i + 1 < len(args):
+                Config.ServerSendPort = int(args[i + 1])
+                i += 1
+            elif arg == '-totaltime' and i + 1 < len(args):
+                Config.TotalTime = int(args[i + 1])
+                i += 1
+            elif arg == '-remainingtime' and i + 1 < len(args):
+                Config.RemainingTime = int(args[i + 1])
+                i += 1
+            elif arg == '-groupmode' and i + 1 < len(args):
+                if args[i + 1].lower() == 'true':
+                    Data.GameMode = Data.GameModes.Group
+                i += 1
+        except Exception as e:
+            print(f"Chyba při zpracování argumentu {arg}: {e}")
+        i += 1
+
 if __name__ == '__main__':
+    parse_arguments(sys.argv[1:])
     start_time = time.time()
     print(f"Spouštím aplikaci...")
+    # Spustíme UDP receiver
+    start_udp_receiver()
     
     # Spustíme Flask server
     server_thread = threading.Thread(target=start_server, daemon=True)
@@ -216,7 +277,18 @@ if __name__ == '__main__':
     print(f"Vytvářím webview okno... ({time.time() - start_time:.2f}s)")
     
     def on_loaded():
-        """Přidá F5/Ctrl+F5 handlery po načtení stránky."""
+        """Přidá F5/Ctrl+F5 handlery po načtení stránky a předá config do JS."""
+        # Připrav data pro JavaScript
+        js_config = json.dumps({
+            "ServerReceivePort": Config.ServerReceivePort,
+            "ServerSendPort": Config.ServerSendPort,
+            "TotalTime": Config.TotalTime,
+            "RemainingTime": Config.RemainingTime,
+            "GameMode": Data.GameMode
+        })
+        # Vlož data do stránky jako globální proměnnou
+        window.evaluate_js(f"window.kioskConfig = {js_config};")
+
         window.evaluate_js("""
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'F5') {
@@ -242,9 +314,9 @@ if __name__ == '__main__':
         y=0,
         min_size=(1920, 1080),
         resizable=False,
-        frameless=True,
+        frameless=False, #TODO True
         shadow=False,
-        on_top=True,
+        on_top=False, #TODO True
         easy_drag=False
     )
     
@@ -252,4 +324,4 @@ if __name__ == '__main__':
 
     # Spuštění GUI smyčky (blokuje, dokud se okno nezavře)
     print(f"Spouštím webview... ({time.time() - start_time:.2f}s)")
-    webview.start(debug=False, http_server=False)
+    webview.start(debug=True, http_server=False)

@@ -14,11 +14,16 @@ def setup_logging():
     from logging.handlers import RotatingFileHandler
     
     if getattr(sys, 'frozen', False):
-        # V exe - log do souboru vedle exe
-        log_path = os.path.join(os.path.dirname(sys.executable), 'kiosk.log')
+        # V exe - log do složky log vedle exe
+        base_dir = os.path.dirname(sys.executable)
+        log_dir = os.path.join(base_dir, 'log')
     else:
-        # V dev - log do current dir
-        log_path = 'kiosk.log'
+        # V dev - log do složky log v current dir
+        log_dir = 'log'
+    
+    # Vytvoř log složku pokud neexistuje
+    os.makedirs(log_dir, exist_ok=True)
+    log_path = os.path.join(log_dir, 'kiosk.log')
     
     # Vytvoření rotating file handler
     # maxBytes: 1MB max velikost, backupCount: uchovej 3 staré soubory

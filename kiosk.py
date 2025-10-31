@@ -24,13 +24,15 @@ if __name__ == '__main__':
     start_time = time.time()
     print(f"Spouštím aplikaci...")
 
+    # Flask server stále potřebujeme pro servování HTML souborů
     app = create_app(BUILD_DIR, FLASK_PORT)
     server_thread = threading.Thread(target=start_server, args=(app, FLASK_PORT), daemon=True)
     server_thread.start()
-    print(f"Flask server spuštěn na portu {FLASK_PORT}")
+    print(f"Flask server spuštěn na portu {FLASK_PORT} (pouze pro HTML)")
 
     url = f'http://127.0.0.1:{FLASK_PORT}'
     print(f"Servíruji z adresáře '{BUILD_DIR}' na {url}")
+    print(f"Python API dostupné jako window.pywebview.api.*")
     time.sleep(1)
 
     def on_loaded():

@@ -11,6 +11,8 @@ import logging
 
 # Nastavení logování
 def setup_logging():
+    from logging.handlers import RotatingFileHandler
+    
     if getattr(sys, 'frozen', False):
         # V exe - log do souboru vedle exe
         log_path = os.path.join(os.path.dirname(sys.executable), 'kiosk.log')
@@ -18,15 +20,41 @@ def setup_logging():
         # V dev - log do current dir
         log_path = 'kiosk.log'
     
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.FileHandler(log_path, encoding='utf-8'),
-            logging.StreamHandler()  # Zároveň do konzole
-        ]
+    # Vytvoření rotating file handler
+    # maxBytes: 1MB max velikost, backupCount: uchovej 3 staré soubory
+    file_handler = RotatingFileHandler(
+        log_path, 
+        maxBytes=1024*1024,  # 1MB
+        backupCount=3,       # kiosk.log.1, kiosk.log.2, kiosk.log.3
+        encoding='utf-8'
     )
-    return logging.getLogger(__name__)
+    
+    # Formátování
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(formatter)
+    
+    # Console handler (jen pro debug)
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    
+    # Nastavení loggeru
+    logger = logging.getLogger(__name__)
+    
+    # Úroveň logování podle prostředí
+    if '-debug' in sys.argv:
+        logger.setLevel(logging.DEBUG)  # Vše
+    elif getattr(sys, 'frozen', False):
+        logger.setLevel(logging.WARNING)  # Pouze warnings a errory v produkci
+    else:
+        logger.setLevel(logging.INFO)  # Info v development
+    
+    logger.addHandler(file_handler)
+    
+    # Console pouze v debug režimu nebo dev prostředí
+    if not getattr(sys, 'frozen', False) or '--debug' in sys.argv or '-debug' in sys.argv:
+        logger.addHandler(console_handler)
+    
+    return logger
 
 logger = setup_logging()
 

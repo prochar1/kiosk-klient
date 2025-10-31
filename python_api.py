@@ -25,7 +25,7 @@ def setup_logging():
     file_handler = RotatingFileHandler(
         log_path, 
         maxBytes=512*1024,  # 512KB místo 1MB
-        backupCount=2,       # Pouze 2 staré soubory
+        backupCount=10,       # Pouze 10 starých souborů
         encoding='utf-8'
     )
     

@@ -118,9 +118,13 @@ class Api:
                     # Pro PyInstaller - wget zabalený do exe
                     if getattr(sys, 'frozen', False):
                         # V PyInstaller buildu
-                        wget_embedded = os.path.join(sys._MEIPASS, 'wget.exe')
+                        temp_dir = sys._MEIPASS
+                        print(f"PyInstaller temp dir: {temp_dir}")
+                        wget_embedded = os.path.join(temp_dir, 'wget.exe')
+                        print(f"Looking for wget at: {wget_embedded}")
                         if os.path.exists(wget_embedded):
                             wget_cmd = wget_embedded
+                            print(f"Using embedded wget: {wget_cmd}")
                     
                     # Lokální wget.exe vedle aplikace (fallback)
                     if not wget_cmd:

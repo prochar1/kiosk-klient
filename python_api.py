@@ -29,8 +29,8 @@ def setup_logging():
     # maxBytes: 1MB max velikost, backupCount: uchovej 3 staré soubory
     file_handler = RotatingFileHandler(
         log_path, 
-        maxBytes=512*1024,  # 512KB místo 1MB
-        backupCount=10,       # Pouze 10 starých souborů
+        maxBytes=1024*1024,  # 1MB místo 512KB
+        backupCount=3,       # Pouze 3 staré soubory
         encoding='utf-8'
     )
     

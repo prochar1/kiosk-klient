@@ -49,14 +49,18 @@ kiosk-klient/
 ├── kiosk.py              # Hlavní spouštěcí skript
 ├── config.py             # Konfigurace a zpracování argumentů
 ├── flask_server.py       # Flask server pro HTML soubory
-├── python_api.py         # JavaScript API pro přímé volání Python funkcí
+├── python_api.py         # JavaScript API + rotující logování
 ├── udp_receiver.py       # UDP receiver pro příjem zpráv
 ├── webview_app.py        # Vytvoření a správa webview okna
-├── kiosk.spec            # PyInstaller konfigurace
-├── wget.exe              # Wget pro Windows (volitelné)
+├── kiosk.spec            # PyInstaller konfigurace (embedded wget)
+├── wget.exe              # Wget pro Windows (zabalí se do exe)
 ├── html/                 # HTML build soubory
 │   ├── index.html
 │   └── static/
+├── log/                  # Rotující logy (vytvoří se automaticky)
+│   ├── kiosk.log
+│   ├── kiosk.log.1
+│   └── ...
 ├── API_DOCUMENTATION.md  # Dokumentace JavaScript API
 └── README.md
 ```
@@ -299,14 +303,34 @@ while True:
 
 ### Logování
 
-Aplikace vypisuje informace o:
+Aplikace má integrované rotující logování do složky `log/`:
 
-- Režimu spuštění a argumentech
-- Čase spuštění jednotlivých komponent
-- Flask serveru a portech
-- UDP receiveru a odeslaných zprávách
-- Wget operacích a jejich výsledcích
-- Chybách při UDP komunikaci
+**Umístění logů:**
+
+- **Development**: `./log/kiosk.log`
+- **Production**: `./log/kiosk.log` (vedle exe souboru)
+
+**Úrovně logování:**
+
+- **Debug režim** (`-debug`): Všechny zprávy (DEBUG a výše)
+- **Development**: INFO a výše
+- **Production**: Pouze WARNING a ERROR
+
+**Rotace logů:**
+
+- **Maximální velikost**: 1MB per soubor
+- **Počet souborů**: 4 soubory (kiosk.log + kiosk.log.1-3)
+- **Celková velikost**: Max 4MB
+- **Automatické čištění**: Starší logy se automaticky mažou
+
+**Sledované události:**
+
+- Spuštění aplikace a argumenty
+- Flask server a UDP receiver inicializace
+- Odesílání a příjem UDP zpráv
+- Wget operace a aktualizace HTML
+- Chyby a výjimky
+- PyInstaller temp složky (v debug režimu)
 
 ## 📝 Poznámky
 
@@ -330,10 +354,21 @@ Aplikace vypisuje informace o:
 ### HTML aktualizace
 
 - Běží v samostatném vlákně pro neblokování UI
-- Vyžaduje `wget.exe` vedle aplikace nebo `wget` v PATH
+- **Embedded wget**: `wget.exe` je zabalený přímo v exe souboru
+- **Fallback**: Lokální `wget.exe` vedle aplikace nebo systémový `wget`
+- **PyInstaller**: Wget se automaticky extrahuje do temp složky
 - Stará HTML data jsou automaticky zálohována s časovým razítkem
 - Aplikace se automaticky restartuje po úspěšné aktualizaci
 - Blokuje současné spuštění více aktualizací
+
+### Nasazení
+
+**Single-file executable:**
+
+- `kiosk.exe` obsahuje vše potřebné včetně `wget.exe`
+- Žádné externí závislosti
+- Portable - lze spouštět kdekoli
+- Automatické vytvoření `log/` a `html/` složek
 
 ### Výhody nového API
 
